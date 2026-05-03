@@ -41,12 +41,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 
-// ============================
-// Serve Frontend (Production)
-// ============================
-if (process.env.NODE_ENV === 'production') {
-  const frontendPath = path.join(__dirname, '../frontend/dist');
+const fs = require('fs');
 
+// ============================
+// Serve Frontend (Production / Deployment)
+// ============================
+const frontendPath = path.join(__dirname, '../frontend/dist');
+if (process.env.NODE_ENV === 'production' || fs.existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
 
   app.get('*', (req, res) => {
@@ -56,6 +57,11 @@ if (process.env.NODE_ENV === 'production') {
     }
 
     res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+} else {
+  // Fallback for development if frontend/dist doesn't exist
+  app.get('/', (req, res) => {
+    res.send('API is running. Frontend build not found.');
   });
 }
 
